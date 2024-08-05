@@ -1,7 +1,11 @@
-<script setup></script>
+<script setup>
+import ToolBar from '@/components/toolBar.vue'
+import WorkSpace from '@/components/workSpace.vue'
+</script>
 
 <template>
-  <div class="test">123</div>
+  <ToolBar />
+  <WorkSpace />
 </template>
 
 <style scoped>

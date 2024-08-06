@@ -2,63 +2,58 @@
   <div class="container">
     <div
       class="container-inner"
+      ref="container"
       @mousedown="handleMouseDown"
       @mousemove="handleMouseMove"
       @mouseup="handleMouseUp"
       @wheel="handleScroll"
     >
-      <div
-        v-for="e in elements"
-        :key="e.id"
+      <WorkSpaceElement
+        v-for="item in elements.items"
+        :key="item.id"
         class="element"
+        :class="[
+          item.type,
+          { hovered: item.id === hoveredElementId && !elementDragFlag },
+          { grabbed: elementDragFlag && item.id === draggingElementId }
+        ]"
         :style="{
-          left: `${e.x}px`,
-          top: `${e.y}px`,
-          transform: `scale(${scale})`,
-          width: `${e.width}px`,
-          height: `${e.height}px`,
-          transformOrigin: 'left top 0px'
+          left: `${item.x}px`,
+          top: `${item.y}px`,
+          width: `${item.width}px`,
+          height: `${item.height}px`,
+          transform: `scale(${scale})`
         }"
-      >
-        content
-      </div>
+        @mouseover="elementMouseOver(item.id)"
+        @mousedown.stop="elementDragStart(item.id, $event)"
+        @mouseup.stop="elementDragEnd"
+      ></WorkSpaceElement>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useElementsStore } from '@/stores/elements'
 import { ref } from 'vue'
 
-const elements = ref([
-  {
-    id: 1,
-    x_main: 5,
-    y_main: 10,
-    x: 5,
-    y: 10,
-    width: 50,
-    height: 50
-  },
-  {
-    id: 2,
-    x_main: 100,
-    y_main: 100,
-    x: 100,
-    y: 100,
-    width: 50,
-    height: 50
-  }
-])
+import WorkSpaceElement from './WorkSpaceElement.vue'
+
+const elements = useElementsStore()
+
+const container = ref(null)
 
 const startDragX = ref(0)
 const startDragY = ref(0)
 const scale = ref(1)
-
 const isDragging = ref(false)
 
-function handleMouseDown(e) {
-  console.log('mousedown', e.clientX, e.clientY)
+const hoveredElementId = ref(null)
+const elementDragFlag = ref(false)
+const draggingElementId = ref(null)
 
+const elementTarget = ref(null) /* SSSS */
+
+function handleMouseDown(e) {
   isDragging.value = true
   startDragX.value = e.clientX
   startDragY.value = e.clientY
@@ -68,65 +63,87 @@ function handleMouseMove(event) {
   if (isDragging.value) {
     const deltaX = event.clientX - startDragX.value
     const deltaY = event.clientY - startDragY.value
-    console.log({
-      deltaX,
-      deltaY
-    })
-    /* x.value = e.clientX
-    y.value = e.clientY */
-    elements.value = elements.value.map((e) => {
-      return {
-        ...e,
-        x: e.x_main + deltaX,
-        y: e.y_main + deltaY
+
+    elements.updateCoordinatesForMove(deltaX, deltaY)
+  }
+
+  if (elementDragFlag.value) {
+    const containerClientRec = container.value.getBoundingClientRect()
+    let x =
+      event.clientX -
+      containerClientRec.left -
+      container.value.clientLeft -
+      elementTarget.value.clientWidth / 2
+    let y =
+      event.clientY -
+      containerClientRec.top -
+      container.value.clientTop -
+      elementTarget.value.clientHeight / 2
+
+    if (x < 0) x = 0
+    if (y < 0) y = 0
+
+    /* // // запрещаем пересекать правую границу поля
+    if (ballCoords.left + ball.clientWidth > field.clientWidth) {
+        ballCoords.left = field.clientWidth - ball.clientWidth;
       }
-    })
+
+    // запрещаем пересекать нижнюю границу поля
+    if (ballCoords.top + ball.clientHeight > field.clientHeight) {
+      ballCoords.top = field.clientHeight - ball.clientHeight;
+    } */
+
+    console.log(
+      x,
+      y,
+      containerClientRec.left,
+      containerClientRec.clientLeft,
+      containerClientRec,
+      container.value
+    )
+
+    elements.updateCoordinatesForGrabbing(draggingElementId.value, x, y)
   }
 }
 
-function handleMouseUp(event) {
-  console.log('mouseup', event.clientX, event.clientY)
+function handleMouseUp() {
   isDragging.value = false
-  elements.value = elements.value.map((e) => {
-    return {
-      ...e,
-      x_main: e.x,
-      y_main: e.y
-    }
-  })
+  elements.updateMainCoordinates()
 }
 
 function handleScroll(event) {
   const scaleVar = 0.1
   const scaleDirection = event.deltaY > 0 ? 0.1 : -0.1
   const newScaleValue = scale.value * Math.pow(scaleVar, scaleDirection)
-  console.log(event.deltaY)
+  const deltaScale = newScaleValue / scale.value
 
   if (newScaleValue > 2 || newScaleValue < 0.5) {
     return
   }
 
-  elements.value = elements.value.map((e) => {
-    console.log({
-      condition: event.deltaY > 0,
-      first: e.x * (newScaleValue / scale.value)
-    })
-
-    return {
-      ...e,
-      x: e.x * (newScaleValue / scale.value),
-      y: e.y * (newScaleValue / scale.value)
-    }
-  })
-  elements.value = elements.value.map((e) => {
-    return {
-      ...e,
-      x_main: e.x,
-      y_main: e.y
-    }
-  })
+  elements.updateCoordinatesForResize(deltaScale)
+  elements.updateMainCoordinates()
 
   scale.value = newScaleValue
+}
+
+function elementMouseOver(elementId) {
+  hoveredElementId.value = elementId
+}
+
+function elementDragStart(elementId, event) {
+  draggingElementId.value = elementId
+  elementDragFlag.value = true
+  elementTarget.value = event.target
+
+  console.log(elementTarget.value)
+}
+
+function elementDragEnd() {
+  hoveredElementId.value = null
+  draggingElementId.value = null
+  elementDragFlag.value = false
+  elements.updateMainCoordinates()
 }
 </script>
 
@@ -140,17 +157,6 @@ function handleScroll(event) {
 .container .container-inner {
   width: 100vw;
   height: 100vh;
-  position: relative;
-}
-.container-inner .element {
-  position: absolute;
-  min-width: 50px;
-  min-height: 50px;
-  background-color: rgb(150, 30, 206);
-  color: #ffffff;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 3px solid red;
 }
 </style>

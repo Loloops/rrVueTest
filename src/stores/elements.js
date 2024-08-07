@@ -13,8 +13,40 @@ export const useElementsStore = defineStore('elements', () => {
         x: 100,
         y: 100,
         width: 150,
-        height: 150,
+        height: 50,
         type: 'square'
+      },
+      circle: {
+        id: new Date().getTime(),
+        x_main: 100,
+        y_main: 100,
+        x: 100,
+        y: 100,
+        width: 50,
+        height: 50,
+        type: 'circle'
+      },
+      img1: {
+        id: new Date().getTime(),
+        x_main: 100,
+        y_main: 100,
+        x: 100,
+        y: 100,
+        width: 50,
+        height: 50,
+        src: 'src/assets/img.png',
+        type: 'img'
+      },
+      img2: {
+        id: new Date().getTime(),
+        x_main: 100,
+        y_main: 100,
+        x: 100,
+        y: 100,
+        width: 50,
+        height: 50,
+        src: 'src/assets/2.png',
+        type: 'img'
       }
     }
     items.value.push(elemetsObj[element])

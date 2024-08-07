@@ -8,21 +8,43 @@
         <ul>
           <li class="draw-component-item" @click="createElement('square')">
             <svg
-              fill="#000000"
-              height="20px"
-              width="20px"
-              version="1.1"
-              id="Layer_1"
+              width="24"
+              height="24"
+              clip-rule="evenodd"
+              fill-rule="evenodd"
+              stroke-linejoin="round"
+              stroke-miterlimit="2"
+              viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
-              viewBox="0 0 330 330"
-              xml:space="preserve"
             >
               <path
-                id="XMLID_523_"
-                d="M315,0H15C6.716,0,0,6.716,0,15v300c0,8.284,6.716,15,15,15h300c8.284,0,15-6.716,15-15V15  C330,6.716,323.285,0,315,0z M300,300H30V30h270V300z"
+                d="m21 4c0-.478-.379-1-1-1h-16c-.62 0-1 .519-1 1v16c0 .621.52 1 1 1h16c.478 0 1-.379 1-1zm-16.5.5h15v15h-15z"
+                fill-rule="nonzero"
               />
             </svg>
+          </li>
+          <li class="draw-component-item" @click="createElement('circle')">
+            <svg
+              width="24"
+              height="24"
+              clip-rule="evenodd"
+              fill-rule="evenodd"
+              stroke-linejoin="round"
+              stroke-miterlimit="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m11.998 2c5.517 0 9.997 4.48 9.997 9.998 0 5.517-4.48 9.997-9.997 9.997-5.518 0-9.998-4.48-9.998-9.997 0-5.518 4.48-9.998 9.998-9.998zm0 1.5c-4.69 0-8.498 3.808-8.498 8.498s3.808 8.497 8.498 8.497 8.497-3.807 8.497-8.497-3.807-8.498-8.497-8.498z"
+                fill-rule="nonzero"
+              />
+            </svg>
+          </li>
+          <li class="draw-component-item" @click="createElement('img1')">
+            <img src="../assets/img.png" alt="image" />
+          </li>
+          <li class="draw-component-item" @click="createElement('img2')">
+            <img src="../assets/2.png" alt="image" />
           </li>
         </ul>
       </div>
@@ -68,5 +90,14 @@ svg {
 }
 .draw-components ul * {
   cursor: pointer;
+}
+.draw-components li {
+  max-width: 24px;
+  max-height: 24px;
+}
+.draw-components li img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
 }
 </style>

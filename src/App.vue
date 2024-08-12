@@ -1,15 +1,11 @@
 <script setup>
 import ToolBar from '@/components/toolBar.vue'
-import WorkSpace from '@/components/workSpace.vue'
+import WorkField from '@/components/WorkField.vue'
 </script>
 
 <template>
   <ToolBar />
-  <WorkSpace />
+  <WorkField />
 </template>
 
-<style scoped>
-.test {
-  color: RED;
-}
-</style>
+<style scoped></style>

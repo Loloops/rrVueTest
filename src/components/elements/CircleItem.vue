@@ -1,16 +1,30 @@
 <template>
-  <div></div>
+  <div>
+    <div class="circle">
+      {{ props.text }}
+    </div>
+    <slot></slot>
+  </div>
 </template>
 
-<script setup></script>
+<script setup>
+const props = defineProps({
+  text: {
+    type: String
+  }
+})
+</script>
 
 <style scoped>
 .circle {
-  min-width: 50px;
-  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
   border-radius: 100%;
   background-color: rgb(227, 105, 251);
-  border-radius: 100%;
   border: 2px solid rgb(166, 3, 172);
 }
 </style>

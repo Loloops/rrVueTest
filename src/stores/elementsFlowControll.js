@@ -1,9 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import image1 from '../assets/img.png'
-import image2 from '../assets/2.png'
-
 export const useElementsStore = defineStore('elements', () => {
   const items = ref([])
 
@@ -17,7 +14,8 @@ export const useElementsStore = defineStore('elements', () => {
           x: 100,
           y: 100
         },
-        styles: 'width: 50px;height: 50px',
+        styles: 'width: 150px;height: 50px',
+        data: 'el square',
         type: 'square'
       },
       circle: {
@@ -28,7 +26,8 @@ export const useElementsStore = defineStore('elements', () => {
           x: 100,
           y: 100
         },
-        styles: 'width: 50px;height: 50px',
+        styles: 'width: 70px;height: 70px',
+        data: 'el circle',
         type: 'circle'
       },
       img1: {
@@ -39,7 +38,8 @@ export const useElementsStore = defineStore('elements', () => {
           x: 100,
           y: 100
         },
-        styles: `width: 50px;height: 50px;background-image: url('${image1}');`,
+        styles: `width: 70px;height: 70px;`,
+        data: '',
         type: 'img'
       },
       img2: {
@@ -50,7 +50,8 @@ export const useElementsStore = defineStore('elements', () => {
           x: 100,
           y: 100
         },
-        styles: `width: 50px;height: 50px;background-image: url('${image2}');`,
+        styles: `width: 70px;height: 70px;`,
+        data: '',
         type: 'img2'
       }
     }
@@ -114,12 +115,17 @@ export const useElementsStore = defineStore('elements', () => {
     })
   }
 
+  function deleteElement(id) {
+    items.value = items.value.filter((e) => e.id !== id)
+  }
+
   return {
     items,
     addElement,
     updateMainElementsCoordinates,
     updateCoordinatesForFieldMove,
     updateCoordinatesForFieldResize,
-    updateCoordinatesForGrabbing
+    updateCoordinatesForGrabbing,
+    deleteElement
   }
 })

@@ -1,15 +1,29 @@
 <template>
-  <div></div>
+  <div>
+    <div class="square">
+      {{ props.text }}
+    </div>
+    <slot></slot>
+  </div>
 </template>
 
-<script setup></script>
+<script setup>
+const props = defineProps({
+  text: {
+    type: String
+  }
+})
+</script>
 
 <style scoped>
 .square {
-  min-width: 50px;
-  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   background-color: #ffffff;
-  padding: 0;
+  width: 100%;
+  height: 100%;
   border: 1px solid #cecece;
   border-radius: 10px;
   box-shadow: 0px 2px 6px #cecece;

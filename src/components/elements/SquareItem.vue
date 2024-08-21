@@ -13,6 +13,10 @@ const props = defineProps({
     type: String
   }
 })
+
+defineExpose({
+  props
+})
 </script>
 
 <style scoped>

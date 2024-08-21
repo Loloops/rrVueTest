@@ -2,7 +2,50 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useElementsStore = defineStore('elements', () => {
-  const items = ref([])
+  const items = ref([
+    {
+      id: 1,
+      coords: {
+        x_main: 40,
+        y_main: 40,
+        x: 40,
+        y: 40,
+        width: 150,
+        height: 50
+      },
+      styles: 'width: 150px;height: 50px',
+      data: 'el square',
+      type: 'square'
+    },
+    {
+      id: 2,
+      coords: {
+        x_main: 700,
+        y_main: 700,
+        x: 700,
+        y: 700,
+        width: 150,
+        height: 50
+      },
+      styles: 'width: 150px;height: 50px',
+      data: 'el square',
+      type: 'square'
+    }
+  ])
+
+  const itemsEdges = ref([
+    {
+      id: 1,
+      source: {
+        id: 1,
+        pos: 'left'
+      },
+      target: {
+        id: 2,
+        pos: 'bottom'
+      }
+    }
+  ])
 
   function addElement(element) {
     var elemetsObj = {
@@ -109,7 +152,9 @@ export const useElementsStore = defineStore('elements', () => {
         coords: {
           ...e.coords,
           x: e.coords.x * deltaScale,
-          y: e.coords.y * deltaScale
+          y: e.coords.y * deltaScale,
+          width: e.coords.width * deltaScale,
+          height: e.coords.height * deltaScale
         }
       }
     })
@@ -121,6 +166,7 @@ export const useElementsStore = defineStore('elements', () => {
 
   return {
     items,
+    itemsEdges,
     addElement,
     updateMainElementsCoordinates,
     updateCoordinatesForFieldMove,

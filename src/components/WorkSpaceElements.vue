@@ -3,6 +3,7 @@
     v-for="item in elements.items"
     :is="typeToComponent[item.type]"
     :key="item.id"
+    :id="item.id"
     class="element"
     :class="[
       { hovered: item.id === hoveredElementId && !elementDragFlag },
@@ -23,7 +24,84 @@
     @mousedown.stop="elementDragStart(item.id, $event)"
     @mouseup.stop="elementDragEnd"
   >
+    <div class="chains-flow">
+      <div class="chain chain--top" data-pos="top">
+        <div class="dot">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            style="fill: #fff; stroke: #8c3bee; stroke-width: 4px; width: 8px; height: 8px"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z"
+            />
+          </svg>
+        </div>
+      </div>
+      <div class="chain chain--right" data-pos="right">
+        <div class="dot">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            style="fill: #fff; stroke: #8c3bee; stroke-width: 4px; width: 8px; height: 8px"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z"
+            />
+          </svg>
+        </div>
+      </div>
+      <div class="chain chain--bottom" data-pos="bottom">
+        <div class="dot">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            style="fill: #fff; stroke: #8c3bee; stroke-width: 4px; width: 8px; height: 8px"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z"
+            />
+          </svg>
+        </div>
+      </div>
+      <div class="chain chain--left" data-pos="left">
+        <div class="dot">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            style="fill: #fff; stroke: #8c3bee; stroke-width: 4px; width: 8px; height: 8px"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M7 3.34a10 10 0 1 1 -4.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 4.995 -8.336z"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+
     <TooltipWithControl :showCondition="item.id === hoveredElementId && !elementDragFlag">
+      <ButtonDefault title="chain" @mousedown.stop="">
+        <svg
+          style="width: 15px; height: 15px; vertical-align: middle"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M7 10h14l-4 -4" />
+          <path d="M17 14h-14l4 4" />
+        </svg>
+      </ButtonDefault>
       <ButtonDefault title="delete" @mousedown.stop="elements.deleteElement(item.id)">
         <svg
           style="width: 15px; height: 15px; vertical-align: middle"
@@ -38,6 +116,19 @@
       </ButtonDefault>
     </TooltipWithControl>
   </component>
+  <svg
+    width="100%"
+    height="100%"
+    style="height: 100%; min-height: 100vh; pointer-events: none; width: 100%; z-index: 0"
+  >
+    <g v-for="item in elements.itemsEdges" :key="item.id">
+      <path
+        :stroke-width="scale + 'px'"
+        style="fill: none; stroke: rgb(171, 189, 210)"
+        :d="getEdgesPath(item)"
+      />
+    </g>
+  </svg>
 </template>
 
 <script setup>
@@ -130,6 +221,47 @@ function calculateElementCoords({ windowMouseX, windowMouseY }) {
   return { x, y }
 }
 
+function getEdgesPath(edge) {
+  const source = elements.items.find((item) => item.id === edge.source.id)
+  const target = elements.items.find((item) => item.id === edge.target.id)
+  const sourceX =
+    source.coords.x +
+    (edge.source.pos === 'right'
+      ? source.coords.width
+      : edge.source.pos === 'left'
+        ? 0
+        : source.coords.width / 2)
+  const sourceY =
+    source.coords.y +
+    (edge.source.pos === 'bottom'
+      ? source.coords.height
+      : edge.source.pos === 'top'
+        ? 0
+        : source.coords.height / 2)
+  const targetX =
+    target.coords.x +
+    (edge.target.pos === 'right'
+      ? target.coords.width
+      : edge.target.pos === 'left'
+        ? 0
+        : target.coords.width / 2)
+  const targetY =
+    target.coords.y +
+    (edge.target.pos === 'bottom'
+      ? target.coords.height
+      : edge.target.pos === 'top'
+        ? 0
+        : target.coords.height / 2)
+
+  let path = [`M ${sourceX},${sourceY}`, `H ${targetX}`, `V ${targetY}`]
+
+  if (edge.source.pos === 'right' || edge.target.pos === 'left') {
+    path = [`M ${sourceX},${sourceY}`, `V ${targetY}`, `H ${targetX}`]
+  }
+
+  return path.join(' ')
+}
+
 watch(
   () => props.windowMouseCoords,
   (newValue) => {
@@ -148,13 +280,21 @@ onMounted(() => {
   if (props.parentContainer !== null) {
     containerRect.value = props.parentContainer.getBoundingClientRect()
   }
+
+  elements.items.forEach((item) => {
+    const elementRef = document.getElementById(item.id) // Получаем ссылку на элемент
+
+    if (elementRef) {
+      const elementRect = elementRef.getBoundingClientRect()
+      console.log(elementRect)
+    }
+  })
 })
 </script>
 
 <style scoped>
 .element {
   position: absolute;
-  padding: 2px;
   border: 1px solid transparent;
 }
 .element.hovered {
@@ -164,5 +304,48 @@ onMounted(() => {
 .element.grabbed {
   cursor: grabbing;
   user-select: none;
+}
+
+.chain {
+  position: absolute;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  z-index: 2;
+}
+.chain--bottom {
+  transform: translate(0%, 50%);
+  left: 0;
+  bottom: 0;
+}
+.chain--top {
+  transform: translate(0%, -50%);
+  left: 0;
+  top: 0;
+}
+.chain--right {
+  transform: translate(50%, 0);
+  top: 0;
+  right: 0;
+  width: auto;
+  height: 100%;
+}
+.chain--left {
+  transform: translate(-50%, 0);
+  top: 0;
+  left: 0;
+  width: auto;
+  height: 100%;
+}
+.dot {
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
 }
 </style>

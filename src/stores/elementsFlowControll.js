@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useElementsStore = defineStore('elements', () => {
   const items = ref([
-    {
+    /* {
       id: 1,
       coords: {
         x_main: 40,
@@ -30,22 +30,26 @@ export const useElementsStore = defineStore('elements', () => {
       styles: 'width: 150px;height: 50px',
       data: 'el square',
       type: 'square'
-    }
+    } */
   ])
 
   const itemsEdges = ref([
-    {
+    /* {
       id: 1,
       source: {
         id: 1,
-        pos: 'left'
+        pos: 'bottom'
       },
       target: {
         id: 2,
-        pos: 'bottom'
+        pos: 'left'
       }
-    }
+    } */
   ])
+
+  function addChainFlow(flow) {
+    itemsEdges.value.push(flow)
+  }
 
   function addElement(element) {
     var elemetsObj = {
@@ -55,7 +59,9 @@ export const useElementsStore = defineStore('elements', () => {
           x_main: 100,
           y_main: 100,
           x: 100,
-          y: 100
+          y: 100,
+          width: 150,
+          height: 50
         },
         styles: 'width: 150px;height: 50px',
         data: 'el square',
@@ -67,7 +73,9 @@ export const useElementsStore = defineStore('elements', () => {
           x_main: 100,
           y_main: 100,
           x: 100,
-          y: 100
+          y: 100,
+          width: 70,
+          height: 70
         },
         styles: 'width: 70px;height: 70px',
         data: 'el circle',
@@ -79,7 +87,9 @@ export const useElementsStore = defineStore('elements', () => {
           x_main: 100,
           y_main: 100,
           x: 100,
-          y: 100
+          y: 100,
+          width: 70,
+          height: 70
         },
         styles: `width: 70px;height: 70px;`,
         data: '',
@@ -91,7 +101,9 @@ export const useElementsStore = defineStore('elements', () => {
           x_main: 100,
           y_main: 100,
           x: 100,
-          y: 100
+          y: 100,
+          width: 70,
+          height: 70
         },
         styles: `width: 70px;height: 70px;`,
         data: '',
@@ -172,6 +184,7 @@ export const useElementsStore = defineStore('elements', () => {
     updateCoordinatesForFieldMove,
     updateCoordinatesForFieldResize,
     updateCoordinatesForGrabbing,
-    deleteElement
+    deleteElement,
+    addChainFlow
   }
 })

@@ -11,6 +11,7 @@
   display: block;
   pointer-events: none !important;
 }
+
 .btn {
   padding: 3px;
   border: 0;
@@ -22,7 +23,8 @@
   transition: all 0.2s ease;
   cursor: pointer;
 }
-.btn:hover {
+.btn:hover,
+.btn.active {
   background-color: #000000;
   fill: #ffffff !important;
   color: #ffffff;

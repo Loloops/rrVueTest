@@ -11,7 +11,8 @@
         :parentContainer="parentContainer"
         :windowMouseCoords="{
           windowMouseX,
-          windowMouseY
+          windowMouseY,
+          windowTarget
         }"
         :scale="scale"
       />
@@ -29,6 +30,7 @@ const elements = useElementsStore()
 
 const windowMouseX = ref(0)
 const windowMouseY = ref(0)
+const windowTarget = ref(null)
 const startDragX = ref(0)
 const startDragY = ref(0)
 const scale = ref(1)
@@ -38,17 +40,29 @@ const parentContainer = ref(null)
 const isDragging = ref(false)
 
 const handleMouseDown = (event) => {
+  if (!windowTarget.value.classList.contains('container-inner')) {
+    return
+  }
+
   isDragging.value = true
   startDragX.value = event.clientX
   startDragY.value = event.clientY
 }
 
 const handleMouseUp = () => {
+  if (!windowTarget.value.classList.contains('container-inner')) {
+    return
+  }
+
   isDragging.value = false
   elements.updateMainElementsCoordinates()
 }
 
 const handleScroll = (event) => {
+  if (!windowTarget.value.classList.contains('container-inner')) {
+    return
+  }
+
   const scaleVar = 0.1
   const scaleDirection = event.deltaY > 0 ? 0.1 : -0.1
   const newScaleValue = scale.value * Math.pow(scaleVar, scaleDirection)
@@ -67,8 +81,9 @@ const handleScroll = (event) => {
 const handleMouseMove = (event) => {
   windowMouseX.value = event.clientX
   windowMouseY.value = event.clientY
+  windowTarget.value = event.target
 
-  if (isDragging.value) {
+  if (isDragging.value && windowTarget.value.classList.contains('container-inner')) {
     const deltaX = windowMouseX.value - startDragX.value
     const deltaY = windowMouseY.value - startDragY.value
 
@@ -77,10 +92,10 @@ const handleMouseMove = (event) => {
 }
 
 onMounted(() => {
-  window.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('mousemove', handleMouseMove)
 })
 onUnmounted(() => {
-  window.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('mousemove', handleMouseMove)
 })
 </script>
 

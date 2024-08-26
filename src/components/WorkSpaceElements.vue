@@ -6,6 +6,7 @@
     :id="item.id"
     class="element"
     :class="[
+      elementJs,
       { hovered: item.id === hoveredElementId && !elementDragFlag },
       { grabbed: elementDragFlag && item.id === draggingElementId }
     ]"
@@ -21,12 +22,12 @@
     :text="item.data"
     @mouseover="elementMouseOver(item.id)"
     @mouseleave="elementMouseLeave"
-    @mousedown.stop="elementDragStart(item.id, $event)"
-    @mouseup.stop="elementDragEnd"
+    @mousedown="elementDragStart(item.id, $event)"
+    @mouseup="elementDragEnd"
   >
-    <div class="chains-flow">
-      <div class="chain chain--top" data-pos="top">
-        <div class="dot">
+    <div class="chains-flow" v-if="isChainFlow" @mousedown="testChain($event, item)">
+      <div class="chain chain--top">
+        <div class="dot" data-pos="top">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -39,8 +40,8 @@
           </svg>
         </div>
       </div>
-      <div class="chain chain--right" data-pos="right">
-        <div class="dot">
+      <div class="chain chain--right">
+        <div class="dot" data-pos="right">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -53,8 +54,8 @@
           </svg>
         </div>
       </div>
-      <div class="chain chain--bottom" data-pos="bottom">
-        <div class="dot">
+      <div class="chain chain--bottom">
+        <div class="dot" data-pos="bottom">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -67,8 +68,8 @@
           </svg>
         </div>
       </div>
-      <div class="chain chain--left" data-pos="left">
-        <div class="dot">
+      <div class="chain chain--left">
+        <div class="dot" data-pos="left">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -84,7 +85,11 @@
     </div>
 
     <TooltipWithControl :showCondition="item.id === hoveredElementId && !elementDragFlag">
-      <ButtonDefault title="chain" @mousedown.stop="">
+      <ButtonDefault
+        :class="{ active: isChainFlow }"
+        title="chain"
+        @mousedown.stop="isChainFlow = !isChainFlow"
+      >
         <svg
           style="width: 15px; height: 15px; vertical-align: middle"
           xmlns="http://www.w3.org/2000/svg"
@@ -125,7 +130,14 @@
       <path
         :stroke-width="scale + 'px'"
         style="fill: none; stroke: rgb(171, 189, 210)"
-        :d="getEdgesPath(item)"
+        :d="edgePath[item.id]"
+      />
+    </g>
+    <g v-if="sourceItemChain">
+      <path
+        :stroke-width="scale + 'px'"
+        style="fill: none; stroke: rgb(171, 189, 210)"
+        :d="drawPath(windowMouseCoords, startPointChain)"
       />
     </g>
   </svg>
@@ -133,7 +145,7 @@
 
 <script setup>
 import { useElementsStore } from '@/stores/elementsFlowControll'
-import { onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import CircleItem from '@/components/elements/CircleItem.vue'
 import SquareItem from '@/components/elements/SquareItem.vue'
@@ -153,6 +165,164 @@ const typeToComponent = {
   img: ImageFristItem,
   img2: ImageSecondItem
 }
+const elementJs = 'element-js'
+
+/*  */ const isChainFlow = ref(false)
+
+function drawPath({ windowMouseX, windowMouseY }, { x, y }) {
+  /*   const sourceX =
+    source.coords.x +
+    (edge.source.pos === 'right'
+      ? source.coords.width
+      : edge.source.pos === 'left'
+        ? 0
+        : source.coords.width / 2)
+  const sourceY =
+    source.coords.y +
+    (edge.source.pos === 'bottom'
+      ? source.coords.height
+      : edge.source.pos === 'top'
+        ? 0
+        : source.coords.height / 2)
+  const targetX =
+    target.coords.x +
+    (edge.target.pos === 'right'
+      ? target.coords.width
+      : edge.target.pos === 'left'
+        ? 0
+        : target.coords.width / 2)
+  const targetY =
+    target.coords.y +
+    (edge.target.pos === 'bottom'
+      ? target.coords.height
+      : edge.target.pos === 'top'
+        ? 0
+        : target.coords.height / 2) */
+
+  let path = [`M ${x},${y}`, `H ${windowMouseX}`, `V ${windowMouseY - containerRect.value.top}`]
+
+  /* if (edge.source.pos === 'right' || edge.target.pos === 'left') {
+    path = [`M ${sourceX},${sourceY}`, `V ${targetY}`, `H ${targetX}`]
+  } */
+
+  return path.join(' ')
+}
+
+const edgePath = computed(() => {
+  const path = {}
+
+  elements.itemsEdges.forEach((edge) => {
+    path[edge.id] = getEdgesPath(edge)
+  })
+
+  return path
+})
+
+function getEdgesPath(edge) {
+  const source = elements.items.find((item) => item.id === edge.source.id)
+  const target = elements.items.find((item) => item.id === edge.target.id)
+
+  const sourceX =
+    source.coords.x +
+    (edge.source.pos === 'right'
+      ? source.coords.width
+      : edge.source.pos === 'left'
+        ? 0
+        : source.coords.width / 2)
+  const sourceY =
+    source.coords.y +
+    (edge.source.pos === 'bottom'
+      ? source.coords.height
+      : edge.source.pos === 'top'
+        ? 0
+        : source.coords.height / 2)
+  const targetX =
+    target.coords.x +
+    (edge.target.pos === 'right'
+      ? target.coords.width
+      : edge.target.pos === 'left'
+        ? 0
+        : target.coords.width / 2)
+  const targetY =
+    target.coords.y +
+    (edge.target.pos === 'bottom'
+      ? target.coords.height
+      : edge.target.pos === 'top'
+        ? 0
+        : target.coords.height / 2)
+
+  let path = [`M ${sourceX},${sourceY}`, `H ${targetX}`, `V ${targetY}`]
+
+  if (edge.source.pos === 'right' || edge.target.pos === 'left') {
+    path = [`M ${sourceX},${sourceY}`, `V ${targetY}`, `H ${targetX}`]
+  }
+
+  return path.join(' ')
+}
+
+const chainFlow = ref({})
+const sourceItemChain = ref(null)
+const targetItemChain = ref(null)
+
+const startPointChain = ref({})
+
+function testChain(event, item) {
+  let target = event.target
+
+  if (!target.classList.contains('dot')) {
+    return
+  }
+  function handleMouseUpChain(event) {
+    let targetUp = event.target,
+      targetMain = targetUp.closest(`.${elementJs}`)
+
+    if (
+      targetMain &&
+      targetUp.classList.contains('dot') &&
+      targetMain.dataset.id !== sourceItemChain.value?.id
+    ) {
+      targetItemChain.value = {
+        id: +targetMain.id,
+        pos: targetUp.dataset.pos
+      }
+      chainFlow.value = {
+        id: Date.now(),
+        source: sourceItemChain.value,
+        target: targetItemChain.value
+      }
+      elements.addChainFlow(chainFlow.value)
+      startPointChain.value = {}
+      sourceItemChain.value = {}
+    } else {
+      sourceItemChain.value = {}
+      startPointChain.value = {}
+    }
+
+    isChainFlow.value = false
+
+    target.removeEventListener('mousemove', handleMouseMoveChain)
+    document.removeEventListener('mouseup', handleMouseUpChain)
+  }
+
+  function handleMouseMoveChain() {
+    const targetClientRectX = targetClientRect.x + targetClientRect.width / 2
+    const targetClientRectY = targetClientRect.y + targetClientRect.height / 2
+
+    sourceItemChain.value = {
+      id: item.id,
+      pos: target.dataset.pos
+    }
+    startPointChain.value = {
+      x: targetClientRectX,
+      y: targetClientRectY - containerRect.value.top
+    }
+  }
+
+  const targetClientRect = target.getBoundingClientRect()
+
+  target.addEventListener('mousemove', handleMouseMoveChain)
+  document.addEventListener('mouseup', handleMouseUpChain)
+}
 
 const elements = useElementsStore()
 
@@ -167,6 +337,8 @@ const hoveredElementId = ref(null)
 const containerRect = ref(null)
 
 const elementDragStart = (elementId, event) => {
+  if (isChainFlow.value) return
+
   draggingElementId.value = elementId
   elementDragFlag.value = true
   elementTarget.value = event.target
@@ -221,47 +393,6 @@ function calculateElementCoords({ windowMouseX, windowMouseY }) {
   return { x, y }
 }
 
-function getEdgesPath(edge) {
-  const source = elements.items.find((item) => item.id === edge.source.id)
-  const target = elements.items.find((item) => item.id === edge.target.id)
-  const sourceX =
-    source.coords.x +
-    (edge.source.pos === 'right'
-      ? source.coords.width
-      : edge.source.pos === 'left'
-        ? 0
-        : source.coords.width / 2)
-  const sourceY =
-    source.coords.y +
-    (edge.source.pos === 'bottom'
-      ? source.coords.height
-      : edge.source.pos === 'top'
-        ? 0
-        : source.coords.height / 2)
-  const targetX =
-    target.coords.x +
-    (edge.target.pos === 'right'
-      ? target.coords.width
-      : edge.target.pos === 'left'
-        ? 0
-        : target.coords.width / 2)
-  const targetY =
-    target.coords.y +
-    (edge.target.pos === 'bottom'
-      ? target.coords.height
-      : edge.target.pos === 'top'
-        ? 0
-        : target.coords.height / 2)
-
-  let path = [`M ${sourceX},${sourceY}`, `H ${targetX}`, `V ${targetY}`]
-
-  if (edge.source.pos === 'right' || edge.target.pos === 'left') {
-    path = [`M ${sourceX},${sourceY}`, `V ${targetY}`, `H ${targetX}`]
-  }
-
-  return path.join(' ')
-}
-
 watch(
   () => props.windowMouseCoords,
   (newValue) => {
@@ -281,14 +412,20 @@ onMounted(() => {
     containerRect.value = props.parentContainer.getBoundingClientRect()
   }
 
-  elements.items.forEach((item) => {
+  nextTick(() => {
+    if (props.parentContainer !== null) {
+      containerRect.value = props.parentContainer.getBoundingClientRect()
+    }
+  })
+
+  /* elements.items.forEach((item) => {
     const elementRef = document.getElementById(item.id) // Получаем ссылку на элемент
 
     if (elementRef) {
       const elementRect = elementRef.getBoundingClientRect()
       console.log(elementRect)
     }
-  })
+  }) */
 })
 </script>
 
@@ -340,12 +477,15 @@ onMounted(() => {
   height: 100%;
 }
 .dot {
-  width: 15px;
-  height: 15px;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   cursor: pointer;
+}
+.dot svg {
+  pointer-events: none !important;
 }
 </style>
